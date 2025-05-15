@@ -4,8 +4,10 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,7 +26,7 @@ public class AuthController {
 
 	private final JwtProvider jwtProvider;
 	private final UserRepository userRepository;
-	private final GoogleTokenUtil googleTokenUtil; // ✅ 인스턴스 주입
+	private final GoogleTokenUtil googleTokenUtil;
 
 	@PostMapping("/login")
 	public Mono<ResponseEntity<Map<String, Object>>> login(@RequestBody Map<String, String> request) {
@@ -60,5 +62,32 @@ public class AuthController {
 				"refresh_token", refreshToken
 			)
 		)));
+	}
+
+	@GetMapping("/status")
+	public Mono<ResponseEntity<Map<String, Object>>> status(@RequestHeader("Authorization") String token) {
+		try {
+			String email = jwtProvider.getEmailFromToken(token);
+
+			//실제 서비스에서는 email로 사용자 정보 조회
+			Map<String, Object> data = Map.of(
+				"user_id", 12345,
+				"name", "홍길동",
+				"email", email,
+				"profile_image", "https://example.com/profile.jpg",
+				"department", "사이버보안학과",
+				"college", "소프트웨어융합대학",
+				"major", "사이버보안전공",
+				"grade", 3
+			);
+
+			return Mono.just(ResponseEntity.ok(Map.of(
+				"status", "success",
+				"data", data
+			)));
+		} catch (Exception e) {
+			return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(Map.of("status", "fail", "message", "유효하지 않은 토큰")));
+		}
 	}
 }
