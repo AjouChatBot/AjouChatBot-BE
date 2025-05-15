@@ -1,4 +1,6 @@
 package io.saim.AjouChatBot_BE.chat.service;
+import java.util.List;
+
 import io.saim.AjouChatBot_BE.chat.dto.RecentTopicResponseDTO;
 import io.saim.AjouChatBot_BE.chat.entity.RecentTopic;
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
@@ -40,7 +42,18 @@ public class ChatService {
 			.map(t -> new RecentTopicResponseDTO(
 				t.getQuestionId(),
 				t.getQuestion(),
-				t.getCreatedAt()
+				t.getCreatedAt(),
+				t.getKeywords()
+			));
+	}
+
+	public Flux<RecentTopicResponseDTO> search(String query, List<String> keywords, String startDate, String endDate) {
+		return recentTopicRepository.search(query, keywords, startDate, endDate)
+			.map(t -> new RecentTopicResponseDTO(
+				t.getQuestionId(),
+				t.getQuestion(),
+				t.getCreatedAt(),
+				t.getKeywords()
 			));
 	}
 }

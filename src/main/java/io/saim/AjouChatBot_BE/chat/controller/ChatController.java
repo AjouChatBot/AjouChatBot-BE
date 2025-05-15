@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
@@ -46,6 +47,23 @@ public class ChatController {
 	@GetMapping("/recent-topics")
 	public Mono<Map<String, Object>> getRecentTopics() {
 		return chatService.getRecentTopics()
+			.collectList()
+			.map(list -> {
+				Map<String, Object> response = new HashMap<>();
+				response.put("status", "success");
+				response.put("data", list);
+				return response;
+			});
+	}
+
+	@GetMapping("/search")
+	public Mono<Map<String, Object>> search(
+		@RequestParam(required = false) String query,
+		@RequestParam(required = false) List<String> keywords,
+		@RequestParam(required = false) String start_date,
+		@RequestParam(required = false) String end_date
+	) {
+		return chatService.search(query, keywords, start_date, end_date)
 			.collectList()
 			.map(list -> {
 				Map<String, Object> response = new HashMap<>();
