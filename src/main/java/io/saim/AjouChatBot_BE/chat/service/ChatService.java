@@ -2,6 +2,7 @@ package io.saim.AjouChatBot_BE.chat.service;
 import java.util.List;
 
 import io.saim.AjouChatBot_BE.chat.dto.ChatSettingResponseDTO;
+import io.saim.AjouChatBot_BE.chat.dto.ChatSettingUpdateRequestDTO;
 import io.saim.AjouChatBot_BE.chat.dto.RecentTopicResponseDTO;
 import io.saim.AjouChatBot_BE.chat.entity.RecentTopic;
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
@@ -67,5 +68,16 @@ public class ChatService {
 				setting.isIncludeAcademicInfo(),
 				setting.isAllowResponse()
 			));
+	}
+
+	public Mono<Void> updateChatSettings(String userId, ChatSettingUpdateRequestDTO dto) {
+		return chatSettingRepository.findByUserId(userId)
+			.flatMap(setting -> {
+				setting.setNewTopicQuestion(dto.isNew_topic_question());
+				setting.setIncludeAcademicInfo(dto.isInclude_academic_info());
+				setting.setAllowResponse(dto.isAllow_response());
+				return chatSettingRepository.save(setting);
+			})
+			.then();
 	}
 }

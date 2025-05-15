@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
 import io.saim.AjouChatBot_BE.chat.dto.ChatMessageDTO;
+import io.saim.AjouChatBot_BE.chat.dto.ChatSettingUpdateRequestDTO;
 import io.saim.AjouChatBot_BE.chat.dto.SendMessageRequestDTO;
 import io.saim.AjouChatBot_BE.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -82,6 +84,17 @@ public class ChatController {
 			.map(dto -> Map.of(
 				"status", "success",
 				"data", dto
+			));
+	}
+
+	@PatchMapping("/chat-settings")
+	public Mono<Map<String, String>> updateChatSettings(@RequestBody ChatSettingUpdateRequestDTO dto) {
+		String mockUserId = "user123"; //Authorization → userId로 대체 예정
+
+		return chatService.updateChatSettings(mockUserId, dto)
+			.thenReturn(Map.of(
+				"status", "success",
+				"message", "채팅 설정이 성공적으로 변경되었습니다."
 			));
 	}
 }
