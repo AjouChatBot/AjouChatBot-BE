@@ -1,20 +1,16 @@
 package io.saim.AjouChatBot_BE.chat.service;
-import java.util.List;
 
+import java.util.List;
 import io.saim.AjouChatBot_BE.chat.dto.ChatSettingResponseDTO;
 import io.saim.AjouChatBot_BE.chat.dto.ChatSettingUpdateRequestDTO;
 import io.saim.AjouChatBot_BE.chat.dto.RecentTopicResponseDTO;
-import io.saim.AjouChatBot_BE.chat.entity.RecentTopic;
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
 import io.saim.AjouChatBot_BE.chat.dto.ChatMessageDTO;
-import io.saim.AjouChatBot_BE.chat.entity.ChatMessage;
 import io.saim.AjouChatBot_BE.chat.repository.ChatMessageRepository;
-
 import io.saim.AjouChatBot_BE.chat.repository.ChatSettingRepository;
 import io.saim.AjouChatBot_BE.chat.repository.RecentTopicRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -41,8 +37,8 @@ public class ChatService {
 			});
 	}
 
-	public Flux<RecentTopicResponseDTO> getRecentTopics() {
-		return recentTopicRepository.findAllByOrderByCreatedAtDesc()
+	public Flux<RecentTopicResponseDTO> getRecentTopics(String userEmail) {
+		return recentTopicRepository.findByUserEmailOrderByCreatedAtDesc(userEmail)
 			.map(t -> new RecentTopicResponseDTO(
 				t.getQuestionId(),
 				t.getQuestion(),

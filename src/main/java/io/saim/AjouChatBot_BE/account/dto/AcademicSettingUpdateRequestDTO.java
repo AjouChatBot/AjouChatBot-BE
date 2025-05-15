@@ -1,6 +1,5 @@
 package io.saim.AjouChatBot_BE.account.dto;
 
-import io.saim.AjouChatBot_BE.account.entity.AcademicSetting;
 import lombok.Data;
 
 @Data

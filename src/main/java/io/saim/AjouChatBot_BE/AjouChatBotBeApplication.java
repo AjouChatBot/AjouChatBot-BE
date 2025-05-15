@@ -17,6 +17,8 @@ public class AjouChatBotBeApplication {
 		setSystemProperty("SPRING_PORT", dotenv.get("SPRING_PORT"));
 		setSystemProperty("MONGODB_URI", dotenv.get("MONGODB_URI"));
 		setSystemProperty("MONGODB_DATABASE", dotenv.get("MONGODB_DATABASE"));
+		setSystemProperty("GOOGLE_CLIENT_ID", dotenv.get("GOOGLE_CLIENT_ID"));
+		setSystemProperty("AI_SERVER_URL", dotenv.get("AI_SERVER_URL"));
 
 		SpringApplication.run(AjouChatBotBeApplication.class, args);
 	}

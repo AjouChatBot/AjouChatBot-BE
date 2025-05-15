@@ -1,7 +1,6 @@
 package io.saim.AjouChatBot_BE.chat.dto;
 
 import lombok.Data;
-
 import java.util.List;
 
 @Data

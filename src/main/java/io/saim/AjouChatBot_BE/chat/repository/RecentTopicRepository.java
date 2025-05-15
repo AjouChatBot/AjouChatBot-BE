@@ -5,5 +5,6 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Flux;
 
 public interface RecentTopicRepository extends ReactiveMongoRepository<RecentTopic, String>, CustomRecentTopicRepository {
-	Flux<RecentTopic> findAllByOrderByCreatedAtDesc(); // 최근 질문 순 정렬
+	// RecentTopicRepository.java
+	Flux<RecentTopic> findByUserEmailOrderByCreatedAtDesc(String userEmail);
 }

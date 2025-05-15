@@ -2,7 +2,6 @@ package io.saim.AjouChatBot_BE.account.service;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import io.saim.AjouChatBot_BE.account.dto.AcademicSettingResponseDTO;
 import io.saim.AjouChatBot_BE.account.dto.AcademicSettingUpdateRequestDTO;
 import io.saim.AjouChatBot_BE.account.entity.AcademicSetting;

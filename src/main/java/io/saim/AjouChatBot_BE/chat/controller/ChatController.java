@@ -1,14 +1,12 @@
 package io.saim.AjouChatBot_BE.chat.controller;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,12 +17,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.saim.AjouChatBot_BE.auth.util.JwtProvider;
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
-import io.saim.AjouChatBot_BE.chat.dto.ChatMessageDTO;
 import io.saim.AjouChatBot_BE.chat.dto.ChatSettingUpdateRequestDTO;
 import io.saim.AjouChatBot_BE.chat.dto.SendMessageRequestDTO;
 import io.saim.AjouChatBot_BE.chat.service.ChatService;
 import io.saim.AjouChatBot_BE.chat.service.FileStorageService;
+import io.saim.AjouChatBot_BE.chat.service.AiService;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -36,24 +35,30 @@ public class ChatController {
 
 	private final ChatService chatService;
 	private final FileStorageService fileStorageService;
+	private final JwtProvider jwtProvider;
+	private final AiService aiService;
 
 	@PostMapping(value = "/message", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public Flux<String> streamChat(@RequestBody SendMessageRequestDTO request) {
+	public Flux<String> streamChat(@RequestHeader("Authorization") String authHeader, @RequestBody SendMessageRequestDTO request) {
+
+		String email = extractEmailFromAuthHeader(authHeader);
 		String userMessage = request.getMessage();
 
-		//프론트에서 받은 메시지를 그대로 스트리밍 응답으로 반환
-		return Flux.fromStream(userMessage.chars().mapToObj(c -> String.valueOf((char) c)))
-			.delayElements(Duration.ofMillis(50));
+		return aiService.sendMessageToAi(email, request);
 	}
 
 	@GetMapping("/conversations/{conversation_id}")
-	public Mono<ChatHistoryResponseDTO> getChatHistory(@PathVariable("conversation_id") String conversationId) {
+	public Mono<ChatHistoryResponseDTO> getChatHistory(@RequestHeader("Authorization") String authHeader, @PathVariable("conversation_id") String conversationId) {
+
+		String email = extractEmailFromAuthHeader(authHeader);
 		return chatService.getChatHistory(conversationId);
 	}
 
 	@GetMapping("/recent-topics")
-	public Mono<Map<String, Object>> getRecentTopics() {
-		return chatService.getRecentTopics()
+	public Mono<Map<String, Object>> getRecentTopics(@RequestHeader("Authorization") String authHeader) {
+		String email = extractEmailFromAuthHeader(authHeader);
+
+		return chatService.getRecentTopics(email)
 			.collectList()
 			.map(list -> {
 				Map<String, Object> response = new HashMap<>();
@@ -81,11 +86,10 @@ public class ChatController {
 	}
 
 	@GetMapping("/chat-settings")
-	public Mono<Map<String, Object>> getChatSettings() {
-		// 나중에 Authorization에서 userId 파싱하면 교체
-		String mockUserId = "user123";
+	public Mono<Map<String, Object>> getChatSettings(@RequestHeader("Authorization") String authHeader) {
+		String email = extractEmailFromAuthHeader(authHeader);
 
-		return chatService.getChatSettings(mockUserId)
+		return chatService.getChatSettings(email)
 			.map(dto -> Map.of(
 				"status", "success",
 				"data", dto
@@ -93,10 +97,10 @@ public class ChatController {
 	}
 
 	@PatchMapping("/chat-settings")
-	public Mono<Map<String, String>> updateChatSettings(@RequestBody ChatSettingUpdateRequestDTO dto) {
-		String mockUserId = "user123"; //Authorization → userId로 대체 예정
+	public Mono<Map<String, String>> updateChatSettings(@RequestHeader("Authorization") String authHeader, @RequestBody ChatSettingUpdateRequestDTO dto) {
+		String email = extractEmailFromAuthHeader(authHeader);
 
-		return chatService.updateChatSettings(mockUserId, dto)
+		return chatService.updateChatSettings(email, dto)
 			.thenReturn(Map.of(
 				"status", "success",
 				"message", "채팅 설정이 성공적으로 변경되었습니다."
@@ -108,17 +112,22 @@ public class ChatController {
 		consumes = MediaType.MULTIPART_FORM_DATA_VALUE
 	)
 	public Mono<Map<String, Object>> uploadAcademicFile(
+		@RequestHeader("Authorization") String authHeader,
 		@RequestPart("document_type") String documentType,
 		@RequestPart("file") MultipartFile file
 	) {
-		//나중에 Authorization에서 userId 추출 예정
-		String mockUserId = "user123";
+		String email = extractEmailFromAuthHeader(authHeader);
 
-		return fileStorageService.storeFile(file, documentType, mockUserId)
+		return fileStorageService.storeFile(file, documentType, email)
 			.map(fileUrl -> Map.of(
 				"status", "success",
 				"message", "파일 업로드 완료",
 				"data", Map.of("file_url", fileUrl)
 			));
+	}
+
+	private String extractEmailFromAuthHeader(String authHeader) {
+		String token = authHeader.replace("Bearer ", "");
+		return jwtProvider.getEmailFromToken(token);
 	}
 }

@@ -1,7 +1,6 @@
 package io.saim.AjouChatBot_BE.account.dto;
 
 import java.util.Map;
-
 import lombok.Data;
 
 @Data
