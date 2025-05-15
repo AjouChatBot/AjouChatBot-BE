@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.saim.AjouChatBot_BE.account.dto.AcademicSettingResponseDTO;
+import io.saim.AjouChatBot_BE.account.dto.AcademicSettingUpdateRequestDTO;
+import io.saim.AjouChatBot_BE.account.entity.AcademicSetting;
 import io.saim.AjouChatBot_BE.account.entity.AccountInfo;
 import io.saim.AjouChatBot_BE.account.repository.AcademicSettingRepository;
 import io.saim.AjouChatBot_BE.account.repository.AccountInfoRepository;
@@ -39,6 +41,30 @@ public class AccountService {
 
 				dto.setAllowedCategories(categories);
 				return dto;
+			});
+	}
+
+	public Mono<Void> updateAcademicSetting(String userId, AcademicSettingUpdateRequestDTO dto) {
+		return academicSettingRepository.findById(userId)
+			.flatMap(setting -> {
+				setting.setAutoCollect(dto.isAuto_collect());
+				setting.setUseAcademicInfo(dto.isUse_academic_info());
+
+				//allowedCategories 안전하게 접근 및 설정
+				AcademicSetting.AllowedCategories allowed = setting.getAllowedCategories();
+				if (allowed == null) {
+					allowed = new AcademicSetting.AllowedCategories();
+					setting.setAllowedCategories(allowed);
+				}
+
+				AcademicSettingUpdateRequestDTO.AllowedCategoriesDTO c = dto.getAllowed_categories();
+				allowed.setEnrollmentInfo(c.isEnrollment_info());
+				allowed.setAdmissionInfo(c.isAdmission_info());
+				allowed.setCourseInfo(c.isCourse_info());
+				allowed.setGradeInfo(c.isGrade_info());
+				allowed.setRegistrationInfo(c.isRegistration_info());
+
+				return academicSettingRepository.save(setting).then();
 			});
 	}
 }
