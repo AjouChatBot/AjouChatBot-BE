@@ -1,6 +1,7 @@
 package io.saim.AjouChatBot_BE.chat.service;
 import java.util.List;
 
+import io.saim.AjouChatBot_BE.chat.dto.ChatSettingResponseDTO;
 import io.saim.AjouChatBot_BE.chat.dto.RecentTopicResponseDTO;
 import io.saim.AjouChatBot_BE.chat.entity.RecentTopic;
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
@@ -8,6 +9,7 @@ import io.saim.AjouChatBot_BE.chat.dto.ChatMessageDTO;
 import io.saim.AjouChatBot_BE.chat.entity.ChatMessage;
 import io.saim.AjouChatBot_BE.chat.repository.ChatMessageRepository;
 
+import io.saim.AjouChatBot_BE.chat.repository.ChatSettingRepository;
 import io.saim.AjouChatBot_BE.chat.repository.RecentTopicRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class ChatService {
 
 	private final ChatMessageRepository chatMessageRepository;
 	private final RecentTopicRepository recentTopicRepository;
+	private final ChatSettingRepository chatSettingRepository;
 
 	public Mono<ChatHistoryResponseDTO> getChatHistory(String conversationId) {
 		return chatMessageRepository.findByConversationId(conversationId)
@@ -54,6 +57,15 @@ public class ChatService {
 				t.getQuestion(),
 				t.getCreatedAt(),
 				t.getKeywords()
+			));
+	}
+
+	public Mono<ChatSettingResponseDTO> getChatSettings(String userId) {
+		return chatSettingRepository.findByUserId(userId)
+			.map(setting -> new ChatSettingResponseDTO(
+				setting.isNewTopicQuestion(),
+				setting.isIncludeAcademicInfo(),
+				setting.isAllowResponse()
 			));
 	}
 }

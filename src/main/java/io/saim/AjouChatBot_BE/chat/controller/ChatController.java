@@ -72,4 +72,16 @@ public class ChatController {
 				return response;
 			});
 	}
+
+	@GetMapping("/chat-settings")
+	public Mono<Map<String, Object>> getChatSettings() {
+		// 나중에 Authorization에서 userId 파싱하면 교체
+		String mockUserId = "user123";
+
+		return chatService.getChatSettings(mockUserId)
+			.map(dto -> Map.of(
+				"status", "success",
+				"data", dto
+			));
+	}
 }
