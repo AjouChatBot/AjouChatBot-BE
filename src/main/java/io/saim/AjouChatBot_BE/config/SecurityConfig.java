@@ -17,7 +17,7 @@ public class SecurityConfig {
 			.csrf().disable()
 			.authorizeHttpRequests()
 			.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-			.requestMatchers("/chatbot/**").permitAll()
+			.requestMatchers("/chatbot/**", "/chatbot/academic-files").permitAll()
 			.anyRequest().authenticated();
 
 		return http.build();

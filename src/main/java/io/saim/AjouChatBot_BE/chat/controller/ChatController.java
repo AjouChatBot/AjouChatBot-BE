@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
@@ -21,6 +24,7 @@ import io.saim.AjouChatBot_BE.chat.dto.ChatMessageDTO;
 import io.saim.AjouChatBot_BE.chat.dto.ChatSettingUpdateRequestDTO;
 import io.saim.AjouChatBot_BE.chat.dto.SendMessageRequestDTO;
 import io.saim.AjouChatBot_BE.chat.service.ChatService;
+import io.saim.AjouChatBot_BE.chat.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,6 +35,7 @@ import reactor.core.publisher.Mono;
 public class ChatController {
 
 	private final ChatService chatService;
+	private final FileStorageService fileStorageService;
 
 	@PostMapping(value = "/message", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<String> streamChat(@RequestBody SendMessageRequestDTO request) {
@@ -95,6 +100,25 @@ public class ChatController {
 			.thenReturn(Map.of(
 				"status", "success",
 				"message", "채팅 설정이 성공적으로 변경되었습니다."
+			));
+	}
+
+	@PostMapping(
+		value = "/academic-files",
+		consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+	)
+	public Mono<Map<String, Object>> uploadAcademicFile(
+		@RequestPart("document_type") String documentType,
+		@RequestPart("file") MultipartFile file
+	) {
+		//나중에 Authorization에서 userId 추출 예정
+		String mockUserId = "user123";
+
+		return fileStorageService.storeFile(file, documentType, mockUserId)
+			.map(fileUrl -> Map.of(
+				"status", "success",
+				"message", "파일 업로드 완료",
+				"data", Map.of("file_url", fileUrl)
 			));
 	}
 }
