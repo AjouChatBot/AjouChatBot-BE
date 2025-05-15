@@ -1,12 +1,16 @@
 package io.saim.AjouChatBot_BE.chat.service;
-
+import io.saim.AjouChatBot_BE.chat.dto.RecentTopicResponseDTO;
+import io.saim.AjouChatBot_BE.chat.entity.RecentTopic;
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
 import io.saim.AjouChatBot_BE.chat.dto.ChatMessageDTO;
 import io.saim.AjouChatBot_BE.chat.entity.ChatMessage;
 import io.saim.AjouChatBot_BE.chat.repository.ChatMessageRepository;
 
+import io.saim.AjouChatBot_BE.chat.repository.RecentTopicRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -14,6 +18,7 @@ import reactor.core.publisher.Mono;
 public class ChatService {
 
 	private final ChatMessageRepository chatMessageRepository;
+	private final RecentTopicRepository recentTopicRepository;
 
 	public Mono<ChatHistoryResponseDTO> getChatHistory(String conversationId) {
 		return chatMessageRepository.findByConversationId(conversationId)
@@ -28,5 +33,14 @@ public class ChatService {
 				response.setData(data);
 				return response;
 			});
+	}
+
+	public Flux<RecentTopicResponseDTO> getRecentTopics() {
+		return recentTopicRepository.findAllByOrderByCreatedAtDesc()
+			.map(t -> new RecentTopicResponseDTO(
+				t.getQuestionId(),
+				t.getQuestion(),
+				t.getCreatedAt()
+			));
 	}
 }

@@ -2,7 +2,9 @@ package io.saim.AjouChatBot_BE.chat.controller;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,5 +41,17 @@ public class ChatController {
 	@GetMapping("/conversations/{conversation_id}")
 	public Mono<ChatHistoryResponseDTO> getChatHistory(@PathVariable("conversation_id") String conversationId) {
 		return chatService.getChatHistory(conversationId);
+	}
+
+	@GetMapping("/recent-topics")
+	public Mono<Map<String, Object>> getRecentTopics() {
+		return chatService.getRecentTopics()
+			.collectList()
+			.map(list -> {
+				Map<String, Object> response = new HashMap<>();
+				response.put("status", "success");
+				response.put("data", list);
+				return response;
+			});
 	}
 }
