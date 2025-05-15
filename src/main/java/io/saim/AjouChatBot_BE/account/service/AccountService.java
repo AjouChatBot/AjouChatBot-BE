@@ -9,6 +9,7 @@ import io.saim.AjouChatBot_BE.account.entity.AcademicSetting;
 import io.saim.AjouChatBot_BE.account.entity.AccountInfo;
 import io.saim.AjouChatBot_BE.account.repository.AcademicSettingRepository;
 import io.saim.AjouChatBot_BE.account.repository.AccountInfoRepository;
+import io.saim.AjouChatBot_BE.chat.repository.ChatSettingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -18,12 +19,12 @@ import reactor.core.publisher.Mono;
 public class AccountService {
 
 	private final AccountInfoRepository accountInfoRepository;
+	private final AcademicSettingRepository academicSettingRepository;
+	private final ChatSettingRepository chatSettingRepository;
 
 	public Mono<AccountInfo> getAccountInfo(String userId) {
 		return accountInfoRepository.findById(userId);
 	}
-
-	private final AcademicSettingRepository academicSettingRepository;
 
 	public Mono<AcademicSettingResponseDTO> getAcademicSettings(String userId) {
 		return academicSettingRepository.findById(userId)
@@ -66,5 +67,10 @@ public class AccountService {
 
 				return academicSettingRepository.save(setting).then();
 			});
+	}
+
+	public Mono<Void> deletePersonalizedData(String userId) {
+		return academicSettingRepository.deleteById(userId)
+			.then(chatSettingRepository.deleteById(userId));
 	}
 }

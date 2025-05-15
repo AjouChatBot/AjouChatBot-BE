@@ -4,6 +4,8 @@ import io.saim.AjouChatBot_BE.account.dto.AcademicSettingUpdateRequestDTO;
 import io.saim.AjouChatBot_BE.account.entity.AccountInfo;
 import io.saim.AjouChatBot_BE.account.service.AccountService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,6 +51,16 @@ public class AccountController {
 			.thenReturn(Map.of(
 				"status", "success",
 				"message", "학적 정보 설정이 성공적으로 변경되었습니다."
+			));
+	}
+
+	@DeleteMapping("/info/delete")
+	public Mono<Map<String, String>> deletePersonalizedData() {
+		String mockUserId = "user123"; //나중에 Authorization으로 대체 예정
+		return accountService.deletePersonalizedData(mockUserId)
+			.thenReturn(Map.of(
+				"status", "success",
+				"message", "맞춤형 데이터가 초기화되었습니다."
 			));
 	}
 }
