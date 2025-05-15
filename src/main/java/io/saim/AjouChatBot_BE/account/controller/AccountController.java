@@ -27,4 +27,14 @@ public class AccountController {
 				"data", info
 			));
 	}
+
+	@GetMapping("/info/academic-settings")
+	public Mono<Map<String, Object>> getAcademicSettings() {
+		String mockUserId = "user123"; //실제로는 토큰에서 추출
+		return accountService.getAcademicSettings(mockUserId)
+			.map(dto -> Map.of(
+				"status", "success",
+				"data", dto
+			));
+	}
 }
