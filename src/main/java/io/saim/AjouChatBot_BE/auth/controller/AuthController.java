@@ -90,4 +90,19 @@ public class AuthController {
 				.body(Map.of("status", "fail", "message", "유효하지 않은 토큰")));
 		}
 	}
+
+	@PostMapping("/logout")
+	public ResponseEntity<Map<String, String>> logout(@RequestHeader("Authorization") String authHeader) {
+		//access token 파싱 및 유효성 확인
+		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(Map.of("status", "fail", "message", "Authorization 헤더가 유효하지 않음"));
+		}
+
+		String token = authHeader.substring(7); // "Bearer " 제거
+
+		return ResponseEntity.ok(
+			Map.of("status", "success", "message", "로그아웃 성공")
+		);
+	}
 }
