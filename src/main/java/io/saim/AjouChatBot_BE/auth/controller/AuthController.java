@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+
+import io.saim.AjouChatBot_BE.account.entity.AccountInfo;
+import io.saim.AjouChatBot_BE.account.repository.AccountInfoRepository;
 import io.saim.AjouChatBot_BE.auth.util.GoogleTokenUtil;
 import io.saim.AjouChatBot_BE.auth.util.JwtProvider;
 import io.saim.AjouChatBot_BE.repository.UserRepository;
@@ -24,6 +27,7 @@ public class AuthController {
 	private final JwtProvider jwtProvider;
 	private final UserRepository userRepository;
 	private final GoogleTokenUtil googleTokenUtil;
+	private final AccountInfoRepository accountInfoRepository;
 
 	@PostMapping("/login")
 	public Mono<ResponseEntity<Map<String, Object>>> login(@RequestBody Map<String, String> request) {
@@ -40,8 +44,20 @@ public class AuthController {
 		String name = (String) payload.get("name");
 		String picture = (String) payload.get("picture");
 
-		//사용자 등록 or 조회 (임시값)
-		long userId = 12345;
+		//사용자 정보 DB에 자동 저장 (존재하지 않을 때만)
+		AccountInfo newAccount = new AccountInfo();
+		newAccount.setId(email);
+		newAccount.setEmail(email);
+		newAccount.setName(name);
+		newAccount.setPhone(null);
+		newAccount.setDepartment(null);
+		newAccount.setCollege(null);
+		newAccount.setMajor(null);
+		newAccount.setGrade(0);
+
+		accountInfoRepository.findById(email)
+			.switchIfEmpty(accountInfoRepository.save(newAccount))
+			.subscribe();
 
 		//JWT 발급
 		String accessToken = jwtProvider.generateAccessToken(email);
@@ -51,7 +67,7 @@ public class AuthController {
 			"status", "success",
 			"message", "로그인 성공",
 			"data", Map.of(
-				"user_id", userId,
+				"user_id", email,
 				"email", email,
 				"name", name,
 				"profile_image", picture,
@@ -66,9 +82,8 @@ public class AuthController {
 		try {
 			String email = jwtProvider.getEmailFromToken(token);
 
-			//실제 서비스에서는 email로 사용자 정보 조회
 			Map<String, Object> data = Map.of(
-				"user_id", 12345,
+				"user_id", email,
 				"name", "홍길동",
 				"email", email,
 				"profile_image", "https://example.com/profile.jpg",
@@ -96,7 +111,7 @@ public class AuthController {
 				.body(Map.of("status", "fail", "message", "Authorization 헤더가 유효하지 않음"));
 		}
 
-		String token = authHeader.substring(7); // "Bearer " 제거
+		String token = authHeader.substring(7); //"Bearer " 제거
 
 		return ResponseEntity.ok(
 			Map.of("status", "success", "message", "로그아웃 성공")

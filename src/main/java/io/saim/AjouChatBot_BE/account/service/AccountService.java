@@ -21,8 +21,24 @@ public class AccountService {
 	private final AcademicSettingRepository academicSettingRepository;
 	private final ChatSettingRepository chatSettingRepository;
 
+	//사용자 계정 정보를 조회하고 없을 경우 자동으로 기본 계정 생성
 	public Mono<AccountInfo> getAccountInfo(String userId) {
-		return accountInfoRepository.findById(userId);
+		return accountInfoRepository.findById(userId)
+			.switchIfEmpty(createDefaultAccount(userId)); //자동 생성 추가
+	}
+
+	//사용자 계정이 존재하지 않을 경우 기본값으로 저장
+	public Mono<AccountInfo> createDefaultAccount(String userId) {
+		AccountInfo info = new AccountInfo();
+		info.setId(userId);
+		info.setEmail(userId); //이메일 = ID
+		info.setName("이름미지정");
+		info.setPhone("010-0000-0000");
+		info.setDepartment("미지정");
+		info.setCollege("미지정");
+		info.setMajor("미지정");
+		info.setGrade(1);
+		return accountInfoRepository.save(info);
 	}
 
 	public Mono<AcademicSettingResponseDTO> getAcademicSettings(String userId) {

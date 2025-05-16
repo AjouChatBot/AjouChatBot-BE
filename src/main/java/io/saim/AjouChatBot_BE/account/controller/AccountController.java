@@ -27,6 +27,7 @@ public class AccountController {
 	public Mono<Map<String, Object>> getAccountInfo(@RequestHeader("Authorization") String authHeader) {
 		String userId = extractEmailFromAuthHeader(authHeader);
 		return accountService.getAccountInfo(userId)
+			.switchIfEmpty(accountService.createDefaultAccount(userId))
 			.map(info -> Map.of(
 				"status", "success",
 				"data", info
