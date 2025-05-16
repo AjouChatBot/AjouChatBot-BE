@@ -5,6 +5,7 @@ on:
     branches:
       - "main"
 
+jobs:
   be-build:
     runs-on: ubuntu-latest
     steps:
