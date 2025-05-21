@@ -16,4 +16,5 @@ public class AccountInfo {
 	private String college;
 	private String major;
 	private int grade;
+	private boolean trackEnabled = true;
 }

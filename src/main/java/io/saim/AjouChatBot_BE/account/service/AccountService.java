@@ -88,4 +88,19 @@ public class AccountService {
 		return academicSettingRepository.deleteById(userId)
 			.then(chatSettingRepository.deleteById(userId));
 	}
+
+	public Mono<Boolean> getTrackSetting(String userId) {
+		return accountInfoRepository.findById(userId)
+			.map(AccountInfo::isTrackEnabled)
+			.defaultIfEmpty(true);
+	}
+
+	public Mono<Void> updateTrackSetting(String userId, boolean trackEnabled) {
+		return accountInfoRepository.findById(userId)
+			.flatMap(info -> {
+				info.setTrackEnabled(trackEnabled);
+				return accountInfoRepository.save(info);
+			})
+			.then();
+	}
 }

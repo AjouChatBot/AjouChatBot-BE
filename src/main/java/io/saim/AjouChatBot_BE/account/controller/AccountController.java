@@ -1,6 +1,7 @@
 package io.saim.AjouChatBot_BE.account.controller;
 
 import io.saim.AjouChatBot_BE.account.dto.AcademicSettingUpdateRequestDTO;
+import io.saim.AjouChatBot_BE.account.dto.TrackSettingUpdateRequestDTO;
 import io.saim.AjouChatBot_BE.account.service.AccountService;
 import io.saim.AjouChatBot_BE.auth.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -71,5 +72,28 @@ public class AccountController {
 	private String extractEmailFromAuthHeader(String authHeader) {
 		String token = authHeader.replace("Bearer ", "");
 		return jwtProvider.getEmailFromToken(token);
+	}
+
+	@GetMapping("/info/track")
+	public Mono<Map<String, Object>> getTrackSetting(@RequestHeader("Authorization") String authHeader) {
+		String userId = extractEmailFromAuthHeader(authHeader);
+		return accountService.getTrackSetting(userId)
+			.map(trackEnabled -> Map.of(
+				"status", "success",
+				"data", Map.of("track_enabled", trackEnabled)
+			));
+	}
+
+	@PatchMapping("/info/track")
+	public Mono<Map<String, String>> updateTrackSetting(
+		@RequestHeader("Authorization") String authHeader,
+		@RequestBody TrackSettingUpdateRequestDTO dto
+	) {
+		String userId = extractEmailFromAuthHeader(authHeader);
+		return accountService.updateTrackSetting(userId, dto.isTrack_enabled())
+			.thenReturn(Map.of(
+				"status", "success",
+				"message", "수집 설정이 성공적으로 변경되었습니다."
+			));
 	}
 }

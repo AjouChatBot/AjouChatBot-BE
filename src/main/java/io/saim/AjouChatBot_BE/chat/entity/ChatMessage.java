@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-@Data  // ← 필수
+@Data
 @Document(collection = "chat_messages")
 public class ChatMessage {
 	@Id
