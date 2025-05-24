@@ -39,4 +39,8 @@ public class JwtProvider {
 			.getBody()
 			.getSubject();
 	}
+
+	public String getEmailFromRefreshToken(String token) {
+		return getEmailFromToken(token);
+	}
 }

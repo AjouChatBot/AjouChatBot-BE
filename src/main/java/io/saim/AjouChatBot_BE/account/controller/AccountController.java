@@ -6,9 +6,12 @@ import io.saim.AjouChatBot_BE.account.service.AccountService;
 import io.saim.AjouChatBot_BE.auth.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -95,5 +98,26 @@ public class AccountController {
 				"status", "success",
 				"message", "수집 설정이 성공적으로 변경되었습니다."
 			));
+	}
+
+	@PostMapping("/refresh")
+	public ResponseEntity<Map<String, Object>> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+		try {
+			String token = refreshToken.replace("Bearer ", "");
+			String email = jwtProvider.getEmailFromRefreshToken(token);
+
+			String newAccessToken = jwtProvider.generateAccessToken(email);
+
+			return ResponseEntity.ok(Map.of(
+				"status", "success",
+				"message", "Access token이 재발급되었습니다.",
+				"data", Map.of("access_token", newAccessToken)
+			));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+				"status", "fail",
+				"message", "유효하지 않은 refresh token입니다."
+			));
+		}
 	}
 }
