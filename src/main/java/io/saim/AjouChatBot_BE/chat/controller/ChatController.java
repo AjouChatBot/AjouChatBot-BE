@@ -143,4 +143,15 @@ public class ChatController {
 				return response;
 			});
 	}
+
+	@PostMapping("/keyword")
+	public Mono<Map<String, Object>> extractKeywords(@RequestBody Map<String, String> requestBody) {
+		String text = requestBody.get("text");
+
+		return aiService.extractKeywords(text)
+			.map(keywords -> Map.of(
+				"status", "success",
+				"keywords", keywords
+			));
+	}
 }

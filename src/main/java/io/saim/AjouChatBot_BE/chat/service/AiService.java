@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -66,4 +67,18 @@ public class AiService {
 	}
 
 	private record SubjectResponse(String subject) {}
+
+	public Mono<List<String>> extractKeywords(String text) {
+		Map<String, String> requestBody = Map.of("text", text);
+
+		return webClient.post()
+			.uri(aiServerUrl + "/keyword")
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(requestBody)
+			.retrieve()
+			.bodyToMono(KeywordResponse.class)
+			.map(KeywordResponse::keywords);
+	}
+
+	private record KeywordResponse(List<String> keywords) {}
 }
