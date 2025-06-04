@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -51,4 +52,18 @@ public class AiService {
 				return new String(bytes, StandardCharsets.UTF_8);
 			});
 	}
+
+	public Mono<String> extractSubject(String text) {
+		Map<String, String> requestBody = Map.of("text", text);
+
+		return webClient.post()
+			.uri(aiServerUrl + "/subject")
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(requestBody)
+			.retrieve()
+			.bodyToMono(SubjectResponse.class)
+			.map(SubjectResponse::subject); // 추출된 주제만 반환
+	}
+
+	private record SubjectResponse(String subject) {}
 }

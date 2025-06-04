@@ -130,4 +130,17 @@ public class ChatController {
 		String token = authHeader.replace("Bearer ", "");
 		return jwtProvider.getEmailFromToken(token);
 	}
+
+	@PostMapping("/subject")
+	public Mono<Map<String, Object>> extractSubject(@RequestBody Map<String, String> requestBody) {
+		String text = requestBody.get("text");
+
+		return aiService.extractSubject(text)
+			.map(subject -> {
+				Map<String, Object> response = new HashMap<>();
+				response.put("status", "success");
+				response.put("subject", subject);
+				return response;
+			});
+	}
 }
