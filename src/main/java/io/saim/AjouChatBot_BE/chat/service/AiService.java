@@ -80,5 +80,9 @@ public class AiService {
 			.map(KeywordResponse::keywords);
 	}
 
-	private record KeywordResponse(List<String> keywords) {}
+	private record KeywordResponse(
+		List<String> keywords,
+		String target,
+		String category
+	) {}
 }
