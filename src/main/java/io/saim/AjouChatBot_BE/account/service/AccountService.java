@@ -63,11 +63,14 @@ public class AccountService {
 
 	public Mono<Void> updateAcademicSetting(String userId, AcademicSettingUpdateRequestDTO dto) {
 		return academicSettingRepository.findById(userId)
+			.switchIfEmpty(Mono.just(new AcademicSetting(userId)))
 			.flatMap(setting -> {
+				setting.setId(userId);
+
 				setting.setAutoCollect(dto.isAuto_collect());
 				setting.setUseAcademicInfo(dto.isUse_academic_info());
 
-				//allowedCategories 안전하게 접근 및 설정
+				// allowedCategories 안전하게 접근 및 설정
 				AcademicSetting.AllowedCategories allowed = setting.getAllowedCategories();
 				if (allowed == null) {
 					allowed = new AcademicSetting.AllowedCategories();
