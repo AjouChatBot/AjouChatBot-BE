@@ -60,7 +60,14 @@ public class ChatService {
 
 	public Mono<ChatSettingResponseDTO> getChatSettings(String userId) {
 		return chatSettingRepository.findByUserId(userId)
-			.switchIfEmpty(Mono.just(createDefaultSetting(userId)))
+			.switchIfEmpty(Mono.defer(() -> {
+				ChatSetting defaultSetting = new ChatSetting();
+				defaultSetting.setUserId(userId);
+				defaultSetting.setNewTopicQuestion(true);
+				defaultSetting.setIncludeAcademicInfo(false);
+				defaultSetting.setAllowResponse(true);
+				return chatSettingRepository.save(defaultSetting);
+			}))
 			.map(setting -> new ChatSettingResponseDTO(
 				setting.isNewTopicQuestion(),
 				setting.isIncludeAcademicInfo(),
