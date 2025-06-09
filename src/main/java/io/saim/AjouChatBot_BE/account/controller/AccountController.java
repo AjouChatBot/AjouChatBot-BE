@@ -99,25 +99,4 @@ public class AccountController {
 				"message", "수집 설정이 성공적으로 변경되었습니다."
 			));
 	}
-
-	@PostMapping("/refresh")
-	public ResponseEntity<Map<String, Object>> refreshToken(@RequestHeader("Authorization") String refreshToken) {
-		try {
-			String token = refreshToken.replace("Bearer ", "");
-			String email = jwtProvider.getEmailFromRefreshToken(token);
-
-			String newAccessToken = jwtProvider.generateAccessToken(email);
-
-			return ResponseEntity.ok(Map.of(
-				"status", "success",
-				"message", "Access token이 재발급되었습니다.",
-				"data", Map.of("access_token", newAccessToken)
-			));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
-				"status", "fail",
-				"message", "유효하지 않은 refresh token입니다."
-			));
-		}
-	}
 }
