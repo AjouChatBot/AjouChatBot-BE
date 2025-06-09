@@ -6,6 +6,7 @@ import io.saim.AjouChatBot_BE.chat.dto.ChatSettingUpdateRequestDTO;
 import io.saim.AjouChatBot_BE.chat.dto.RecentTopicResponseDTO;
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
 import io.saim.AjouChatBot_BE.chat.dto.ChatMessageDTO;
+import io.saim.AjouChatBot_BE.chat.entity.ChatSetting;
 import io.saim.AjouChatBot_BE.chat.repository.ChatMessageRepository;
 import io.saim.AjouChatBot_BE.chat.repository.ChatSettingRepository;
 import io.saim.AjouChatBot_BE.chat.repository.RecentTopicRepository;
@@ -59,11 +60,21 @@ public class ChatService {
 
 	public Mono<ChatSettingResponseDTO> getChatSettings(String userId) {
 		return chatSettingRepository.findByUserId(userId)
+			.switchIfEmpty(Mono.just(createDefaultSetting(userId)))
 			.map(setting -> new ChatSettingResponseDTO(
 				setting.isNewTopicQuestion(),
 				setting.isIncludeAcademicInfo(),
 				setting.isAllowResponse()
 			));
+	}
+
+	private ChatSetting createDefaultSetting(String userId) {
+		ChatSetting setting = new ChatSetting();
+		setting.setUserId(userId);
+		setting.setNewTopicQuestion(true);
+		setting.setIncludeAcademicInfo(false);
+		setting.setAllowResponse(true);
+		return setting;
 	}
 
 	public Mono<Void> updateChatSettings(String userId, ChatSettingUpdateRequestDTO dto) {
