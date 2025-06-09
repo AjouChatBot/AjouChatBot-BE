@@ -18,7 +18,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests()
 			.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 			.requestMatchers("/chatbot/**", "/chatbot/academic-files", "/account/info", "/account/info/academic-settings", "/account/info/delete", "/auth/login", "/auth/status", "/auth/logout", "/chat", "/health", "/chat/subject","/chat/keyword","/subject",
-				"/keyword","/auth/refresh","/account/info/track").permitAll()
+				"/keyword","/auth/refresh","/account/info/track","/chatbot/chat-settings").permitAll()
 			.anyRequest().authenticated();
 
 		return http.build();
