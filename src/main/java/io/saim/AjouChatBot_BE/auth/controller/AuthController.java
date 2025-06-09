@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 
+import io.saim.AjouChatBot_BE.account.entity.AcademicSetting;
 import io.saim.AjouChatBot_BE.account.entity.AccountInfo;
+import io.saim.AjouChatBot_BE.account.repository.AcademicSettingRepository;
 import io.saim.AjouChatBot_BE.account.repository.AccountInfoRepository;
 import io.saim.AjouChatBot_BE.auth.util.GoogleTokenUtil;
 import io.saim.AjouChatBot_BE.auth.util.JwtProvider;
@@ -28,6 +30,7 @@ public class AuthController {
 	private final UserRepository userRepository;
 	private final GoogleTokenUtil googleTokenUtil;
 	private final AccountInfoRepository accountInfoRepository;
+	private final AcademicSettingRepository academicSettingRepository;
 
 	@PostMapping("/login")
 	public Mono<ResponseEntity<Map<String, Object>>> login(@RequestBody Map<String, String> request) {
@@ -57,6 +60,10 @@ public class AuthController {
 
 		accountInfoRepository.findById(email)
 			.switchIfEmpty(accountInfoRepository.save(newAccount))
+			.subscribe();
+
+		academicSettingRepository.findById(email)
+			.switchIfEmpty(academicSettingRepository.save(new AcademicSetting(email)))
 			.subscribe();
 
 		//JWT 발급

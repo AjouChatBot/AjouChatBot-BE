@@ -43,6 +43,7 @@ public class AccountService {
 
 	public Mono<AcademicSettingResponseDTO> getAcademicSettings(String userId) {
 		return academicSettingRepository.findById(userId)
+			.switchIfEmpty(Mono.just(new AcademicSetting(userId)))
 			.map(setting -> {
 				AcademicSettingResponseDTO dto = new AcademicSettingResponseDTO();
 				dto.setAutoCollect(setting.isAutoCollect());
