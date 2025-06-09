@@ -68,7 +68,7 @@ public class AiService {
 
 	private record SubjectResponse(String subject) {}
 
-	public Mono<List<String>> extractKeywords(String text) {
+	public Mono<KeywordResponse> extractKeywords(String text) {
 		Map<String, String> requestBody = Map.of("text", text);
 
 		return webClient.post()
@@ -76,11 +76,10 @@ public class AiService {
 			.contentType(MediaType.APPLICATION_JSON)
 			.bodyValue(requestBody)
 			.retrieve()
-			.bodyToMono(KeywordResponse.class)
-			.map(KeywordResponse::keywords);
+			.bodyToMono(KeywordResponse.class);
 	}
 
-	private record KeywordResponse(
+	public static record KeywordResponse(
 		List<String> keywords,
 		String target,
 		String category

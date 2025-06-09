@@ -149,9 +149,11 @@ public class ChatController {
 		String text = requestBody.get("text");
 
 		return aiService.extractKeywords(text)
-			.map(keywords -> Map.of(
+			.map(response -> Map.of(
 				"status", "success",
-				"keywords", keywords
+				"keywords", response.keywords(),
+				"target", response.target(),
+				"category", response.category()
 			));
 	}
 }
