@@ -44,14 +44,10 @@ public class ChatController {
 		String conversationId = String.valueOf(request.getConversation_id());
 		String timestamp = String.valueOf(System.currentTimeMillis());
 
-		//사용자 메시지 저장
-		chatService.saveChatMessage(conversationId, "user", userMessage, timestamp)
-			.subscribe();
+		chatService.saveChatMessage(conversationId, "user", userMessage, timestamp).subscribe();
 
-		//AI 응답 스트림
-		Flux<String> aiResponseFlux = aiService.sendMessageToAi(email, request);
+		Flux<String> aiResponseFlux = aiService.sendMessageToAi(email, request).cache();
 
-		//응답 전체를 조합해서 하나의 메시지로 저장
 		aiResponseFlux
 			.reduce(new StringBuilder(), StringBuilder::append)
 			.map(StringBuilder::toString)
