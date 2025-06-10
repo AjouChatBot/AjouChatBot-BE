@@ -37,8 +37,10 @@ public class ChatController {
 	private final AiService aiService;
 
 	@PostMapping(value = "/message", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public Flux<String> streamChat(@RequestHeader("Authorization") String authHeader, @RequestBody SendMessageRequestDTO request) {
-
+	public Flux<String> streamChat(
+		@RequestHeader("Authorization") String authHeader,
+		@RequestBody SendMessageRequestDTO request
+	) {
 		String email = extractEmailFromAuthHeader(authHeader);
 		String userMessage = request.getMessage();
 		String conversationId = String.valueOf(request.getConversation_id());
@@ -49,12 +51,15 @@ public class ChatController {
 		Flux<String> aiResponseFlux = aiService.sendMessageToAi(email, request).share();
 
 		aiResponseFlux
-			.reduce(new StringBuilder(), StringBuilder::append)
-			.map(StringBuilder::toString)
-			.flatMap(fullText ->
-				chatService.saveChatMessage(conversationId, "assistant", fullText, String.valueOf(System.currentTimeMillis()))
-			)
-			.subscribe();
+			.collectList()
+			.map(chunks -> String.join("", chunks))
+			.flatMap(fullMessage ->
+				chatService.saveChatMessage(
+					conversationId,
+					"assistant",
+					fullMessage,
+					String.valueOf(System.currentTimeMillis()))
+			).subscribe();
 
 		return aiResponseFlux;
 	}
