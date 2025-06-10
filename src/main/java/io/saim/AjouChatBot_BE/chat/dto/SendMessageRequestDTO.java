@@ -8,4 +8,5 @@ public class SendMessageRequestDTO {
 	private String message; //사용자 질문
 	private boolean newTopic;
 	private List<String> keywords;
+	private String conversation_id;
 }

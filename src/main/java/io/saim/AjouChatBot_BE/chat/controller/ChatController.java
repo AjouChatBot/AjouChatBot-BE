@@ -3,7 +3,6 @@ package io.saim.AjouChatBot_BE.chat.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-
 import io.saim.AjouChatBot_BE.auth.util.JwtProvider;
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
 import io.saim.AjouChatBot_BE.chat.dto.ChatSettingUpdateRequestDTO;
@@ -43,8 +41,18 @@ public class ChatController {
 
 		String email = extractEmailFromAuthHeader(authHeader);
 		String userMessage = request.getMessage();
+		String conversationId = String.valueOf(request.getConversation_id());
 
-		return aiService.sendMessageToAi(email, request);
+		//1. 사용자 메시지 저장
+		chatService.saveChatMessage(conversationId, "user", userMessage, String.valueOf(System.currentTimeMillis()))
+			.subscribe();
+
+		//2. AI 응답 스트리밍
+		return aiService.sendMessageToAi(email, request)
+			.doOnNext(responseChunk -> {
+				chatService.saveChatMessage(conversationId, "assistant", responseChunk, String.valueOf(System.currentTimeMillis()))
+					.subscribe();
+			});
 	}
 
 	@GetMapping("/conversations/{conversation_id}")
@@ -142,18 +150,5 @@ public class ChatController {
 				response.put("subject", subject);
 				return response;
 			});
-	}
-
-	@PostMapping("/keyword")
-	public Mono<Map<String, Object>> extractKeywords(@RequestBody Map<String, String> requestBody) {
-		String text = requestBody.get("text");
-
-		return aiService.extractKeywords(text)
-			.map(response -> Map.of(
-				"status", "success",
-				"keywords", response.keywords(),
-				"target", response.target(),
-				"category", response.category()
-			));
 	}
 }

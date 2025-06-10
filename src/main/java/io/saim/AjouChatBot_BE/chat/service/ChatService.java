@@ -6,6 +6,7 @@ import io.saim.AjouChatBot_BE.chat.dto.ChatSettingUpdateRequestDTO;
 import io.saim.AjouChatBot_BE.chat.dto.RecentTopicResponseDTO;
 import io.saim.AjouChatBot_BE.chat.dto.ChatHistoryResponseDTO;
 import io.saim.AjouChatBot_BE.chat.dto.ChatMessageDTO;
+import io.saim.AjouChatBot_BE.chat.entity.ChatMessage;
 import io.saim.AjouChatBot_BE.chat.entity.ChatSetting;
 import io.saim.AjouChatBot_BE.chat.repository.ChatMessageRepository;
 import io.saim.AjouChatBot_BE.chat.repository.ChatSettingRepository;
@@ -93,5 +94,14 @@ public class ChatService {
 				return chatSettingRepository.save(setting);
 			})
 			.then();
+	}
+
+	public Mono<Void> saveChatMessage(String conversationId, String sender, String message, String timestamp) {
+		ChatMessage chatMessage = new ChatMessage();
+		chatMessage.setConversationId(conversationId);
+		chatMessage.setSender(sender);
+		chatMessage.setMessage(message);
+		chatMessage.setTimestamp(timestamp);
+		return chatMessageRepository.save(chatMessage).then();
 	}
 }
