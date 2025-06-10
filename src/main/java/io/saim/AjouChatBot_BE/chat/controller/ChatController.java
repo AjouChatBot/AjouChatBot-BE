@@ -42,17 +42,23 @@ public class ChatController {
 		String email = extractEmailFromAuthHeader(authHeader);
 		String userMessage = request.getMessage();
 		String conversationId = String.valueOf(request.getConversation_id());
+		String timestamp = String.valueOf(System.currentTimeMillis());
 
-		//1. 사용자 메시지 저장
-		chatService.saveChatMessage(conversationId, "user", userMessage, String.valueOf(System.currentTimeMillis()))
+		//사용자 메시지 저장
+		chatService.saveChatMessage(conversationId, "user", userMessage, timestamp)
 			.subscribe();
 
-		//2. AI 응답 스트리밍
-		return aiService.sendMessageToAi(email, request)
-			.doOnNext(responseChunk -> {
-				chatService.saveChatMessage(conversationId, "assistant", responseChunk, String.valueOf(System.currentTimeMillis()))
-					.subscribe();
-			});
+		//AI 응답 스트림
+		Flux<String> aiResponseFlux = aiService.sendMessageToAi(email, request);
+
+		//응답 전체를 조합해서 하나의 메시지로 저장
+		aiResponseFlux
+			.reduce(new StringBuilder(), StringBuilder::append)
+			.map(StringBuilder::toString)
+			.flatMap(fullResponse -> chatService.saveChatMessage(conversationId, "assistant", fullResponse, String.valueOf(System.currentTimeMillis())))
+			.subscribe();
+
+		return aiResponseFlux;
 	}
 
 	@GetMapping("/conversations/{conversation_id}")
