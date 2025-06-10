@@ -46,12 +46,14 @@ public class ChatController {
 
 		chatService.saveChatMessage(conversationId, "user", userMessage, timestamp).subscribe();
 
-		Flux<String> aiResponseFlux = aiService.sendMessageToAi(email, request).cache();
+		Flux<String> aiResponseFlux = aiService.sendMessageToAi(email, request).share();
 
 		aiResponseFlux
 			.reduce(new StringBuilder(), StringBuilder::append)
 			.map(StringBuilder::toString)
-			.flatMap(fullResponse -> chatService.saveChatMessage(conversationId, "assistant", fullResponse, String.valueOf(System.currentTimeMillis())))
+			.flatMap(fullText ->
+				chatService.saveChatMessage(conversationId, "assistant", fullText, String.valueOf(System.currentTimeMillis()))
+			)
 			.subscribe();
 
 		return aiResponseFlux;
